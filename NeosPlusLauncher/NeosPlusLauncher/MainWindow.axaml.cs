@@ -1,13 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
 using Octokit;
 
 namespace NeosPlusInstaller
@@ -16,9 +20,28 @@ namespace NeosPlusInstaller
     {
         private const string RepositoryOwner = "Xlinka";
         private const string RepositoryName = "NeosPlus";
-        private const string NeosExePath = @"C:\Path\To\Your\Neos\neos.exe";
-        private const string NeosPlusFolder = @"C:\Path\To\Your\Neos\Libraries\NeosPlus";
-        private const string VersionFilePath = @"C:\Path\To\Your\Neos\Libraries\NeosPlus\version.txt";
+
+        private string[] GetNeosPaths()
+        {
+            string[] defaultPaths =
+            {
+                @"C:\Program Files (x86)\Steam\steamapps\common\NeosVR\",
+                @"C:\Neos\app\",
+                @"/.steam/steam/steamapps/common/NeosVR/",
+                @"/mnt/LocalDisk/SteamLibrary/steamapps/common/NeosVR/"
+            };
+
+            List<string> existingPaths = new List<string>();
+            foreach (string path in defaultPaths)
+            {
+                if (Directory.Exists(path))
+                {
+                    existingPaths.Add(path);
+                }
+            }
+
+            return existingPaths.ToArray();
+        }
 
         private Button InstallButton;
         private TextBlock StatusTextBlock;
@@ -29,13 +52,14 @@ namespace NeosPlusInstaller
 #if DEBUG
             this.AttachDevTools();
 #endif
+            InstallButton = this.FindControl<Button>("InstallButton");
+            StatusTextBlock = this.FindControl<TextBlock>("StatusTextBlock");
+            InstallButton.Click += InstallButton_Click;
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            InstallButton = this.FindControl<Button>("InstallButton");
-            StatusTextBlock = this.FindControl<TextBlock>("StatusTextBlock");
         }
 
         private async void InstallButton_Click(object sender, RoutedEventArgs e)
@@ -43,10 +67,47 @@ namespace NeosPlusInstaller
             InstallButton.IsEnabled = false;
             StatusTextBlock.Text = "Checking for updates...";
 
-            string currentVersion = string.Empty;
-            if (File.Exists(VersionFilePath))
+            string[] neosPaths = GetNeosPaths();
+
+            if (neosPaths.Length == 0)
             {
-                currentVersion = await File.ReadAllTextAsync(VersionFilePath);
+                StatusTextBlock.Text = "No Neos directory found. Aborting installation.";
+                InstallButton.IsEnabled = true;
+                return;
+            }
+
+            string neosPath = neosPaths[0];
+
+            if (neosPaths.Length > 1)
+            {
+                var dialog = new OpenFileDialog
+                {
+                    Title = "Select a directory",
+                    Directory = neosPath ?? "", // Set initial directory to the current Neos path, if available
+                    AllowMultiple = false,
+                    InitialFileName = ".",
+                    Filters = new List<FileDialogFilter> { new FileDialogFilter() { Name = "Directories", Extensions = { "" } } },
+                };
+
+                var result = await dialog.ShowAsync(this);
+
+                if (result != null && result.Length > 0)
+                {
+                    neosPath = result[0];
+                }
+            }
+
+
+            string currentVersion = string.Empty;
+            string versionFilePath = Path.Combine(neosPath, "Libraries", "NeosPlus", "version.txt");
+
+            if (!File.Exists(versionFilePath))
+            {
+                await File.WriteAllTextAsync(versionFilePath, "");
+            }
+            else
+            {
+                currentVersion = await File.ReadAllTextAsync(versionFilePath);
             }
 
             GitHubClient gitHubClient = new(new Octokit.ProductHeaderValue("NeosPlusInstaller"));
@@ -58,27 +119,34 @@ namespace NeosPlusInstaller
                 string localZipFilePath = Path.Combine(Path.GetTempPath(), "NeosPlus.zip");
 
                 StatusTextBlock.Text = "Downloading NeosPlus...";
-                using (WebClient webClient = new())
+                using (HttpClient httpClient = new HttpClient())
                 {
-                    await webClient.DownloadFileTaskAsync(new Uri(latestReleaseUrl), localZipFilePath);
+                    var response = await httpClient.GetAsync(latestReleaseUrl);
+                    using (Stream contentStream = await response.Content.ReadAsStreamAsync(),
+                                 stream = new FileStream(localZipFilePath, System.IO.FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
+                    {
+                        await contentStream.CopyToAsync(stream);
+                    }
                 }
 
                 StatusTextBlock.Text = "Extracting NeosPlus...";
-                if (Directory.Exists(NeosPlusFolder))
+                string neosPlusFolder = Path.Combine(neosPath, "Libraries", "NeosPlus");
+                if (Directory.Exists(neosPlusFolder))
                 {
-                    Directory.Delete(NeosPlusFolder, true);
+                    Directory.Delete(neosPlusFolder, true);
                 }
 
-                Directory.CreateDirectory(NeosPlusFolder);
-                ZipFile.ExtractToDirectory(localZipFilePath, NeosPlusFolder);
+                Directory.CreateDirectory(neosPlusFolder);
+                ZipFile.ExtractToDirectory(localZipFilePath, neosPlusFolder);
 
                 File.Delete(localZipFilePath);
 
-                await File.WriteAllTextAsync(VersionFilePath, latestRelease.TagName);
+                await File.WriteAllTextAsync(versionFilePath, latestRelease.TagName);
             }
 
             StatusTextBlock.Text = "Starting Neos with NeosPlus...";
-            System.Diagnostics.Process.Start(NeosExePath, "-LoadAssembly Libraries\\NeosPlus\\NEOSPlus.dll");
+            string neosExePath = Path.Combine(neosPath, "neos.exe");
+            System.Diagnostics.Process.Start(neosExePath, "-LoadAssembly Libraries\\NeosPlus\\NEOSPlus.dll");
 
             StatusTextBlock.Text = "Done!";
             InstallButton.IsEnabled = true;
