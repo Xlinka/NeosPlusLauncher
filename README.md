@@ -1,4 +1,4 @@
-##NeosPlusInstaller
+## NeosPlusInstaller
 
 NeosPlusInstaller is a program that automates the process of installing Neos+ on your NeosVR installation.
 
