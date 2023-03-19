@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove=".gitignore" />
+    <None Remove="Assets\Neos+.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,13 +25,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<AvaloniaResource Include="Assets\**" />
+	</ItemGroup>
+   
+	<ItemGroup>
 	  <None Update="Assets\Config.json">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
-	  <None Update="Locale\en-GB.json">
+	  <None Update="Locale\en-gb.json">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
-	  <None Update="Locale\en-US.json">
+	  <None Update="Locale\en-us.json">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
 	</ItemGroup>

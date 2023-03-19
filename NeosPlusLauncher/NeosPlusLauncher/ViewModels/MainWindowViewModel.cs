@@ -23,6 +23,7 @@ namespace NeosPlusInstaller.ViewModels
         public class Config
         {
             public string LauncherArguments { get; set; }
+            public string CustomInstallDir { get; set; }
         }
 
         private Config LoadConfig()
@@ -64,10 +65,16 @@ namespace NeosPlusInstaller.ViewModels
                 }
             }
 
+            // Check if CustomInstallDir is set in the configuration
+            Config config = LoadConfig();
+            if (!string.IsNullOrEmpty(config.CustomInstallDir) && Directory.Exists(config.CustomInstallDir))
+            {
+                existingPaths.Insert(0, config.CustomInstallDir);
+            }
+
             return existingPaths.ToArray();
         }
 
-   
 
         private const string RepositoryOwner = "Xlinka";
         private const string RepositoryName = "NeosPlus";
@@ -185,6 +192,11 @@ namespace NeosPlusInstaller.ViewModels
                 if (result != null)
                 {
                     neosPath = result;
+
+                    // Save the custom directory to the configuration
+                    Config config = LoadConfig();
+                    config.CustomInstallDir = neosPath;
+                    SaveConfig(config);
                 }
             }
 
