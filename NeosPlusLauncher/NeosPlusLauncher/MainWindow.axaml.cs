@@ -83,35 +83,35 @@ namespace NeosPlusInstaller
 
             string[] neosPaths = GetNeosPaths();
 
-            if (neosPaths.Length == 0)
+            string neosPath = null;
+
+            if (neosPaths.Length > 0)
+            {
+                neosPath = neosPaths[0];
+            }
+            else
+            {
+                var dialog = new OpenFolderDialog
+                {
+                    Title = "Select a directory",
+                    Directory = "."
+                };
+
+                var result = await dialog.ShowAsync(new Window());
+
+                if (result != null)
+                {
+                    neosPath = result;
+                }
+            }
+
+            if (neosPath == null)
             {
                 StatusTextBlock.Text = "No Neos directory found. Aborting installation.";
                 InstallButton.IsEnabled = true;
                 return;
             }
-
-
-            string neosPath = neosPaths[0];
-            if (neosPaths.Length > 1)
-            {
-                var dialog = new OpenFileDialog
-                {
-                    Title = "Select a directory",
-                    Directory = neosPath ?? "", // Set initial directory to the current Neos path, if available
-                    AllowMultiple = false,
-                    InitialFileName = ".",
-                    Filters = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? new List<FileDialogFilter>() : new List<FileDialogFilter> { new FileDialogFilter { Name = "Directories", Extensions = { "" } } }
-                };
-
-                var result = await dialog.ShowAsync(this);
-
-                if (result != null && result.Length > 0)
-                {
-                    neosPath = result[0];
-                }
-            }
-
-
+           
 
 
             string neosPlusDirectory = Path.Combine(neosPath, "Libraries", "NeosPlus");
