@@ -110,24 +110,7 @@ namespace NeosPlusInstaller
             }
 
 
-            string[] neosDataPaths = neosPaths.Select(path => Path.Combine(path, "Neos_Data", "Managed")).ToArray();
-            string frooxEnginePath = null;
 
-            foreach (string path in neosDataPaths)
-            {
-                if (File.Exists(Path.Combine(path, "FrooxEngine.dll")))
-                {
-                    frooxEnginePath = Path.Combine(neosPath, "Neos_Data", "Managed", "FrooxEngine.dll");
-                    break;
-                }
-            }
-
-            if (frooxEnginePath == null)
-            {
-                StatusTextBlock.Text = "Failed to locate FrooxEngine.dll. Aborting installation.";
-                InstallButton.IsEnabled = true;
-                return;
-            }
 
             string neosPlusDirectory = Path.Combine(neosPath, "Libraries", "NeosPlus");
             string versionFilePath = Path.Combine(neosPlusDirectory, "version.txt");
