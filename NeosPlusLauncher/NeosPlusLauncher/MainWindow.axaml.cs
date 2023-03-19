@@ -96,22 +96,26 @@ namespace NeosPlusInstaller
                     neosPath = result[0];
                 }
             }
+            GitHubClient gitHubClient = new(new Octokit.ProductHeaderValue("NeosPlusInstaller"));
+            Release latestRelease = await gitHubClient.Repository.Release.GetLatest(RepositoryOwner, RepositoryName);
 
+            string neosPlusDirectory = Path.Combine(neosPath, "Libraries", "NeosPlus");
+            string versionFilePath = Path.Combine(neosPlusDirectory, "version.txt");
 
-            string currentVersion = string.Empty;
-            string versionFilePath = Path.Combine(neosPath, "Libraries", "NeosPlus", "version.txt");
+            // Create the NeosPlus directory if it doesn't exist
+            if (!Directory.Exists(neosPlusDirectory))
+            {
+                Directory.CreateDirectory(neosPlusDirectory);
+            }
 
             if (!File.Exists(versionFilePath))
             {
-                await File.WriteAllTextAsync(versionFilePath, "");
+                // Create the version.txt file with the latest release version
+                await File.WriteAllTextAsync(versionFilePath, latestRelease.TagName);
             }
-            else
-            {
-                currentVersion = await File.ReadAllTextAsync(versionFilePath);
-            }
+            // Read the current version from the version.txt file
+            string currentVersion = await File.ReadAllTextAsync(versionFilePath);
 
-            GitHubClient gitHubClient = new(new Octokit.ProductHeaderValue("NeosPlusInstaller"));
-            Release latestRelease = await gitHubClient.Repository.Release.GetLatest(RepositoryOwner, RepositoryName);
 
             if (currentVersion != latestRelease.TagName)
             {

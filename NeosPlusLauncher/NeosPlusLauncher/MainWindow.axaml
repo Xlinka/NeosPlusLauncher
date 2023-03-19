@@ -24,8 +24,7 @@
 
 		<TextBlock Text="NeosPlus Installer" FontWeight="Bold" FontSize="24" Foreground="White" Grid.Row="0" HorizontalAlignment="Center"/>
 
-		<Button x:Name="InstallButton" Content="Install/Update NeosPlus" Grid.Row="1" Margin="0,20,0,0" Padding="10,5" HorizontalAlignment="Center"
-                Command="{Binding InstallCommand}">
+		<Button x:Name="InstallButton" Content="Install/Update NeosPlus" Grid.Row="1" Margin="0,20,0,0" Padding="10,5" HorizontalAlignment="Center">
 			<Button.Styles>
 				<Style Selector="Button">
 					<Setter Property="FontFamily" Value="Segoe UI"/>
