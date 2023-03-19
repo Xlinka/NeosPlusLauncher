@@ -27,6 +27,12 @@
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <AvaloniaResource Update="Assets\Config.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </AvaloniaResource>
+	</ItemGroup>
    
 	<ItemGroup>
 	  <None Update="Assets\Config.json">
