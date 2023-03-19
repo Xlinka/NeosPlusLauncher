@@ -1,0 +1,19 @@
+{
+  "MainWindow": {
+    "Title": "NeosPlus Installer",
+    "InstallButton": "Install",
+    "LauncherArgumentsLabel": "Launcher Arguments:",
+    "StatusTextBlock": "Ready"
+  },
+  "Errors": {
+    "NoNeosDirectory": "No Neos directory found. Aborting installation.",
+    "FailedToDownloadNeosPlus": "Failed to download NeosPlus. Aborting installation."
+  },
+  "StatusMessages": {
+    "CheckingForUpdates": "Checking for updates...",
+    "DownloadingNeosPlus": "Downloading NeosPlus...",
+    "StartingNeosWithNeosPlus": "Starting Neos with NeosPlus...",
+    "Done": "Done!",
+    "SelectDirectory": "Select Directory For Neos"
+  }
+}

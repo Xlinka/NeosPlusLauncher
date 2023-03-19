@@ -15,6 +15,8 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 using Octokit;
+using System.Globalization;
+using System.Text.Json;
 
 namespace NeosPlusInstaller
 {
@@ -48,18 +50,23 @@ namespace NeosPlusInstaller
 
         private Button InstallButton;
         private TextBlock StatusTextBlock;
+        private TextBox LauncherArgumentsTextBox;
 
         public MainWindow()
         {
             InitializeComponent();
+
 #if DEBUG
             this.AttachDevTools();
-#endif
+#endif      
+
             // Initialize logFileName based on the current time
             logFileName = $"log-{DateTime.Now:yyyy-MM-dd_HH-mm-ss-fff}.txt";
             InstallButton = this.FindControl<Button>("InstallButton");
             StatusTextBlock = this.FindControl<TextBlock>("StatusTextBlock");
             InstallButton.Click += InstallButton_Click;
+            LauncherArgumentsTextBox = this.FindControl<TextBox>("LauncherArgumentsTextBox");
+
         }
 
         private void InitializeComponent()
@@ -67,8 +74,27 @@ namespace NeosPlusInstaller
             AvaloniaXamlLoader.Load(this);
         }
 
+
         private async Task LogAsync(string message)
         {
+            string localeFolder = Path.Combine(Directory.GetCurrentDirectory(), "Locale");
+            var currentLocale = System.Globalization.CultureInfo.CurrentCulture.Name;
+            var localeFilePath = Path.Combine(localeFolder, $"{currentLocale}.json");
+            if (!File.Exists(localeFilePath))
+            {
+                Console.WriteLine($"Locale file for {currentLocale} not found.");
+                return;
+            }
+
+            var langFile = File.ReadAllText(localeFilePath);
+
+            var langData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(langFile);
+
+            if (langData.ContainsKey(message))
+            {
+                message = langData[message];
+            }
+
             string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"log-{DateTime.Now:yyyy-MM-dd_HH-mm-ss-fff}.txt");
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
             string logMessage = $"{timestamp} - {message}{Environment.NewLine}";
@@ -76,10 +102,37 @@ namespace NeosPlusInstaller
             await File.AppendAllTextAsync(logFilePath, logMessage);
         }
 
-        private async void InstallButton_Click(object sender, RoutedEventArgs e)
+        private string GetLocalizedString(string key)
+        {
+            string localeFolder = Path.Combine(Directory.GetCurrentDirectory(), "Locale");
+            var currentLocale = CultureInfo.CurrentCulture.Name;
+            var localeFilePath = Path.Combine(localeFolder, $"{currentLocale}.json");
+            if (!File.Exists(localeFilePath))
+            {
+                Console.WriteLine($"Locale file for {currentLocale} not found.");
+                return key;
+            }
+
+            var langFile = File.ReadAllText(localeFilePath);
+
+            var langData = JsonSerializer.Deserialize<Dictionary<string, string>>(langFile);
+
+            if (langData.ContainsKey(key))
+            {
+                return langData[key];
+            }
+            else
+            {
+                Console.WriteLine($"Localization key '{key}' not found in locale file for {currentLocale}.");
+                return key;
+            }
+        }
+
+
+            private async void InstallButton_Click(object sender, RoutedEventArgs e)
         {
             InstallButton.IsEnabled = false;
-            StatusTextBlock.Text = "Checking for updates...";
+            StatusTextBlock.Text = GetLocalizedString("CheckingForUpdates");
 
             string[] neosPaths = GetNeosPaths();
 
@@ -93,7 +146,7 @@ namespace NeosPlusInstaller
             {
                 var dialog = new OpenFolderDialog
                 {
-                    Title = "Select a directory",
+                    Title = GetLocalizedString("SelectDirectory"),
                     Directory = "."
                 };
 
@@ -107,11 +160,11 @@ namespace NeosPlusInstaller
 
             if (neosPath == null)
             {
-                StatusTextBlock.Text = "No Neos directory found. Aborting installation.";
+                StatusTextBlock.Text = GetLocalizedString("NoNeosDirectory");
                 InstallButton.IsEnabled = true;
                 return;
             }
-           
+
 
 
             string neosPlusDirectory = Path.Combine(neosPath, "Libraries", "NeosPlus");
@@ -155,7 +208,7 @@ namespace NeosPlusInstaller
                 string localDllFilePath = Path.Combine(neosPlusDirectory, $"NeosPlus_{latestRelease.TagName}.dll");
                 await LogAsync($"Local Dll File Path: {localDllFilePath}"); // Log the local dll file path
 
-                StatusTextBlock.Text = "Downloading NeosPlus...";
+                StatusTextBlock.Text = GetLocalizedString("DownloadingNeosPlus");
                 using (HttpClient httpClient = new HttpClient())
                 {
                     var response = await httpClient.GetAsync(latestReleaseUrl);
@@ -169,7 +222,7 @@ namespace NeosPlusInstaller
                     }
                     else
                     {
-                        StatusTextBlock.Text = "Failed to download NeosPlus. Aborting installation.";
+                        StatusTextBlock.Text = GetLocalizedString("FailedToDownloadNeosPlus");
                         InstallButton.IsEnabled = true;
                         return;
                     }
@@ -185,10 +238,10 @@ namespace NeosPlusInstaller
                 // Update the version information in the version.txt file
                 await File.WriteAllTextAsync(versionFilePath, latestRelease.TagName);
             }
-            StatusTextBlock.Text = "Starting Neos with NeosPlus...";
+            StatusTextBlock.Text = GetLocalizedString("StartingNeosWithNeosPlus");
             LaunchNeosPlus(neosPath, neosPlusDirectory);
 
-            StatusTextBlock.Text = "Done!";
+            StatusTextBlock.Text = GetLocalizedString("Done");
             InstallButton.IsEnabled = true;
         }
 
@@ -197,6 +250,13 @@ namespace NeosPlusInstaller
             string neosExePath = Path.Combine(neosPath, "neos.exe");
             string neosPlusDllPath = Path.Combine(neosPlusDirectory, "NeosPlus.dll");
             string arguments = $"-LoadAssembly \"{neosPlusDllPath}\"";
+
+            // Get the value of the LauncherArgumentsTextBox and add it as an argument
+            string launcherArguments = LauncherArgumentsTextBox?.Text?.Trim();
+            if (!string.IsNullOrEmpty(launcherArguments))
+            {
+                arguments += $" {launcherArguments}";
+            }
 
             ProcessStartInfo startInfo = new ProcessStartInfo(neosExePath, arguments);
             startInfo.WorkingDirectory = neosPath;

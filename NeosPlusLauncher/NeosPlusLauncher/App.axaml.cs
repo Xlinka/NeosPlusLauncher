@@ -21,5 +21,6 @@ namespace NeosPlusLauncher
         {
             AvaloniaXamlLoader.Load(this);
         }
+
     }
 }
