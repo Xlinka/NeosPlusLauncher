@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -89,6 +90,7 @@ namespace NeosPlusInstaller
                 return;
             }
 
+
             string neosPath = neosPaths[0];
             if (neosPaths.Length > 1)
             {
@@ -98,7 +100,7 @@ namespace NeosPlusInstaller
                     Directory = neosPath ?? "", // Set initial directory to the current Neos path, if available
                     AllowMultiple = false,
                     InitialFileName = ".",
-                    Filters = new List<FileDialogFilter> { new FileDialogFilter() { Name = "Directories", Extensions = { "" } } },
+                    Filters = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? new List<FileDialogFilter>() : new List<FileDialogFilter> { new FileDialogFilter { Name = "Directories", Extensions = { "" } } }
                 };
 
                 var result = await dialog.ShowAsync(this);
