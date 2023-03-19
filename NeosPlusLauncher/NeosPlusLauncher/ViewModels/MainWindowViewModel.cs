@@ -18,7 +18,32 @@ namespace NeosPlusInstaller.ViewModels
 {
     public class MainWindowViewModel
     {
-       
+        private const string ConfigFilePath = "./Assets/Config.json";
+
+        public class Config
+        {
+            public string LauncherArguments { get; set; }
+        }
+
+        private Config LoadConfig()
+        {
+            try
+            {
+                string json = File.ReadAllText(ConfigFilePath);
+                return JsonSerializer.Deserialize<Config>(json);
+            }
+            catch (FileNotFoundException)
+            {
+                // Return a new empty configuration if the file doesn't exist
+                return new Config();
+            }
+        }
+
+        private void SaveConfig(Config config)
+        {
+            string json = JsonSerializer.Serialize(config);
+            File.WriteAllText(ConfigFilePath, json);
+        }
 
         private string[] GetNeosPaths()
         {
@@ -53,6 +78,7 @@ namespace NeosPlusInstaller.ViewModels
         private readonly TextBlock statusTextBlock;
         private readonly TextBox launcherArgumentsTextBox;
 
+
         public MainWindowViewModel(MainWindow mainWindow)
         {
             this.mainWindow = mainWindow;
@@ -65,6 +91,12 @@ namespace NeosPlusInstaller.ViewModels
             launcherArgumentsTextBox = mainWindow.FindControl<TextBox>("LauncherArgumentsTextBox");
 
             installButton.Click += InstallButton_Click;
+
+            // Load the configuration when the application starts
+            Config config = LoadConfig();
+
+            // Set the LauncherArgumentsTextBox to the value in the configuration
+            launcherArgumentsTextBox.Text = config.LauncherArguments;
         }
 
         private async Task LogAsync(string message)
@@ -106,9 +138,17 @@ namespace NeosPlusInstaller.ViewModels
 
             var langFile = File.ReadAllText(localeFilePath);
 
-            var langData = JsonSerializer.Deserialize<Dictionary<string, string>>(langFile);
+            Dictionary<string, string> langData = null;
+            try
+            {
+                langData = JsonSerializer.Deserialize<Dictionary<string, string>>(langFile);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to deserialize langFile: {ex.Message}");
+            }
 
-            if (langData.ContainsKey(key))
+            if (langData != null && langData.ContainsKey(key))
             {
                 return langData[key];
             }
@@ -254,6 +294,11 @@ namespace NeosPlusInstaller.ViewModels
             try
             {
                 Process.Start(startInfo);
+
+                // Save the configuration after launching NeosVR
+                Config config = LoadConfig();
+                config.LauncherArguments = launcherArguments;
+                SaveConfig(config);
             }
             catch (Exception ex)
             {
