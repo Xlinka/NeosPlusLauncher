@@ -1,0 +1,9 @@
+{
+  "CheckingForUpdates": "Suche nach Updates...",
+  "SelectDirectory": "Wähle ein Verzeichnis",
+  "NoNeosDirectory": "Es wurde kein Neos-Verzeichnis ausgewählt.",
+  "DownloadingNeosPlus": "NeosPlus wird gedownloadet...",
+  "FailedToDownloadNeosPlus": "Konnte NeosPlus nicht downloaden.",
+  "StartingNeosWithNeosPlus": "NeosVR wird mit NeosPlus gestartet...",
+  "Done": "Abgeschlossen."
+}
