@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -75,23 +74,17 @@ namespace NeosPlusInstaller.ViewModels
             return existingPaths.ToArray();
         }
 
-
         private const string RepositoryOwner = "Xlinka";
         private const string RepositoryName = "NeosPlus";
-        private string logFileName;
 
         private readonly MainWindow mainWindow;
         private readonly Button installButton;
         private readonly TextBlock statusTextBlock;
         private readonly TextBox launcherArgumentsTextBox;
 
-
         public MainWindowViewModel(MainWindow mainWindow)
         {
             this.mainWindow = mainWindow;
-
-            // Initialize logFileName based on the current time
-            logFileName = $"log-{DateTime.Now:yyyy-MM-dd_HH-mm-ss-fff}.txt";
 
             installButton = mainWindow.FindControl<Button>("InstallButton");
             statusTextBlock = mainWindow.FindControl<TextBlock>("StatusTextBlock");
@@ -106,186 +99,90 @@ namespace NeosPlusInstaller.ViewModels
             launcherArgumentsTextBox.Text = config.LauncherArguments;
         }
 
-        private async Task LogAsync(string message)
-        {
-            string localeFolder = Path.Combine(Directory.GetCurrentDirectory(), "Locale");
-            var currentLocale = System.Globalization.CultureInfo.CurrentCulture.Name;
-            var localeFilePath = Path.Combine(localeFolder, $"{currentLocale}.json");
-            if (!File.Exists(localeFilePath))
-            {
-                Console.WriteLine($"Locale file for {currentLocale} not found.");
-                return;
-            }
-
-            var langFile = File.ReadAllText(localeFilePath);
-
-            var langData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(langFile);
-
-            if (langData.ContainsKey(message))
-            {
-                message = langData[message];
-            }
-
-            string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"log-{DateTime.Now:yyyy-MM-dd_HH-mm-ss-fff}.txt");
-            string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            string logMessage = $"{timestamp} - {message}{Environment.NewLine}";
-
-            await File.AppendAllTextAsync(logFilePath, logMessage);
-        }
-        private string GetLocalizedString(string key)
-        {
-            string localeFolder = Path.Combine(Directory.GetCurrentDirectory(), "Locale");
-            var currentLocale = CultureInfo.CurrentCulture.Name;
-            var localeFilePath = Path.Combine(localeFolder, $"{currentLocale}.json");
-            if (!File.Exists(localeFilePath))
-            {
-                Console.WriteLine($"Locale file for {currentLocale} not found.");
-                return key;
-            }
-
-            var langFile = File.ReadAllText(localeFilePath);
-
-            Dictionary<string, string> langData = null;
-            try
-            {
-                langData = JsonSerializer.Deserialize<Dictionary<string, string>>(langFile);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to deserialize langFile: {ex.Message}");
-            }
-
-            if (langData != null && langData.ContainsKey(key))
-            {
-                return langData[key];
-            }
-            else
-            {
-                Console.WriteLine($"Localization key '{key}' not found in locale file for {currentLocale}.");
-                return key;
-            }
-        }
 
         private async void InstallButton_Click(object sender, RoutedEventArgs e)
         {
             installButton.IsEnabled = false;
-            statusTextBlock.Text = GetLocalizedString("CheckingForUpdates");
+            statusTextBlock.Text = "Checking for updates...";
 
             string[] neosPaths = GetNeosPaths();
-
             string neosPath = null;
 
             if (neosPaths.Length > 0)
-            {
                 neosPath = neosPaths[0];
-            }
             else
             {
-                var dialog = new OpenFolderDialog
-                {
-                    Title = GetLocalizedString("SelectDirectory"),
-                    Directory = "."
-                };
-
+                var dialog = new OpenFolderDialog { Title = "Select Directory", Directory = "." };
                 var result = await dialog.ShowAsync(new Window());
 
-                if (result != null)
+                if (result == null)
                 {
-                    neosPath = result;
-
-                    // Save the custom directory to the configuration
-                    Config config = LoadConfig();
-                    config.CustomInstallDir = neosPath;
-                    SaveConfig(config);
+                    statusTextBlock.Text = "No Neos directory selected.";
+                    installButton.IsEnabled = true;
+                    return;
                 }
+
+                neosPath = result;
+
+                // Save the custom directory to the configuration
+                Config config = LoadConfig();
+                config.CustomInstallDir = neosPath;
+                SaveConfig(config);
             }
-
-            if (neosPath == null)
-            {
-                statusTextBlock.Text = GetLocalizedString("NoNeosDirectory");
-                installButton.IsEnabled = true;
-                return;
-            }
-
-
 
             string neosPlusDirectory = Path.Combine(neosPath, "Libraries", "NeosPlus");
             string versionFilePath = Path.Combine(neosPlusDirectory, "version.txt");
-            string dllFilePath = Path.Combine(neosPlusDirectory, "NeosPlus.dll");
 
             // Create the NeosPlus directory if it doesn't exist
             if (!Directory.Exists(neosPlusDirectory))
-            {
                 Directory.CreateDirectory(neosPlusDirectory);
-            }
 
-            // Read the current version from the version.txt file or set to empty string if not found
-            string currentVersion = "";
-            if (File.Exists(versionFilePath))
-            {
-                currentVersion = File.ReadAllText(versionFilePath);
-            }
+            // Read the current version from the version.txt file or set it to an empty string if not found
+            string currentVersion = File.Exists(versionFilePath) ? File.ReadAllText(versionFilePath) : "";
 
-            GitHubClient gitHubClient = new(new Octokit.ProductHeaderValue("NeosPlusInstaller"));
+            GitHubClient gitHubClient = new GitHubClient(new Octokit.ProductHeaderValue("NeosPlusInstaller"));
             Release latestRelease = await gitHubClient.Repository.Release.GetLatest(RepositoryOwner, RepositoryName);
 
-
-            // Create the NeosPlus directory if it doesn't exist
-            if (!Directory.Exists(neosPlusDirectory))
-            {
-                Directory.CreateDirectory(neosPlusDirectory);
-            }
-
-            // Read the current version from the version.txt file or set to empty string if not found
-            if (File.Exists(versionFilePath))
-            {
-                currentVersion = await File.ReadAllTextAsync(versionFilePath);
-            }
-
-            if (currentVersion != latestRelease.TagName || !File.Exists(dllFilePath))
+            if (currentVersion != latestRelease.TagName)
             {
                 string latestReleaseUrl = latestRelease.Assets[0].BrowserDownloadUrl;
-                await LogAsync($"Latest Release URL: {latestReleaseUrl}"); // Log the asset URL
+                string localZipFilePath = Path.Combine(neosPlusDirectory, $"NeosPlus_{latestRelease.TagName}.zip");
 
-                string localDllFilePath = Path.Combine(neosPlusDirectory, $"NeosPlus_{latestRelease.TagName}.dll");
-                await LogAsync($"Local Dll File Path: {localDllFilePath}"); // Log the local dll file path
-
-                statusTextBlock.Text = GetLocalizedString("DownloadingNeosPlus");
+                statusTextBlock.Text = "Downloading NeosPlus...";
                 using (HttpClient httpClient = new HttpClient())
                 {
                     var response = await httpClient.GetAsync(latestReleaseUrl);
-                    if (response.IsSuccessStatusCode) // Check if the response is successful
+                    if (!response.IsSuccessStatusCode)
                     {
-                        using (Stream contentStream = await response.Content.ReadAsStreamAsync(),
-                                 stream = new FileStream(localDllFilePath, System.IO.FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
-                        {
-                            await contentStream.CopyToAsync(stream);
-                        }
-                    }
-                    else
-                    {
-                        statusTextBlock.Text = GetLocalizedString("FailedToDownloadNeosPlus");
+                        statusTextBlock.Text = "Failed to download NeosPlus.";
                         installButton.IsEnabled = true;
                         return;
                     }
+
+                    using (Stream contentStream = await response.Content.ReadAsStreamAsync(),
+                                stream = new FileStream(localZipFilePath, System.IO.FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
+                    {
+                        await contentStream.CopyToAsync(stream);
+                    }
                 }
 
-                // Replace the current DLL with the new one
-                if (File.Exists(dllFilePath))
-                {
-                    File.Delete(dllFilePath);
-                }
-                File.Move(localDllFilePath, dllFilePath);
+                // Extract the zip file to the NeosPlus directory
+                ZipFile.ExtractToDirectory(localZipFilePath, neosPlusDirectory, true);
+
+                // Delete the zip file after extraction
+                File.Delete(localZipFilePath);
 
                 // Update the version information in the version.txt file
                 await File.WriteAllTextAsync(versionFilePath, latestRelease.TagName);
             }
-            statusTextBlock.Text = GetLocalizedString("StartingNeosWithNeosPlus");
+
+            statusTextBlock.Text = "Starting Neos with NeosPlus...";
             LaunchNeosPlus(neosPath, neosPlusDirectory);
 
-            statusTextBlock.Text = GetLocalizedString("Done");
+            statusTextBlock.Text = "Done";
             installButton.IsEnabled = true;
         }
+
 
         private void LaunchNeosPlus(string neosPath, string neosPlusDirectory)
         {
@@ -319,3 +216,4 @@ namespace NeosPlusInstaller.ViewModels
         }
     }
 }
+
