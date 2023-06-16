@@ -94,17 +94,14 @@ namespace NeosPlusLauncher.ViewModels
 
                 bool downloadSuccess = await DownloadNeosPlus(neosPath, neosPlusDirectory);
 
-                if (!downloadSuccess)
-                {
-                    await Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        installButton.IsEnabled = true;
-                    });
-                    return;
-                }
-
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
+                    if (!downloadSuccess)
+                    {
+                        installButton.IsEnabled = true;
+                        return;
+                    }
+
                     statusTextBlock.Text = "Starting Neos with NeosPlus...";
                 });
 
@@ -128,7 +125,6 @@ namespace NeosPlusLauncher.ViewModels
                 File.WriteAllText(logFilePath, ex.ToString());
             }
         }
-
 
         private async Task<bool> DownloadNeosPlus(string neosPath, string neosPlusDirectory)
         {
@@ -200,6 +196,5 @@ namespace NeosPlusLauncher.ViewModels
         {
             await ExecuteInstall();
         }
-
     }
 }
