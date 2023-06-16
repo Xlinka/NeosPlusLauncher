@@ -26,6 +26,7 @@ namespace NeosPlusLauncher.ViewModels
         }
 
         public ReactiveCommand<Unit, Unit> InstallCommand { get; }
+        public ReactiveCommand<Unit, Unit> LaunchCommand { get; }
 
         private MainWindow mainWindow;
         private Button installButton;
@@ -39,6 +40,7 @@ namespace NeosPlusLauncher.ViewModels
             InitializeControls();
 
             InstallCommand = ReactiveCommand.CreateFromTask(ExecuteInstall);
+            LaunchCommand = ReactiveCommand.Create(LaunchNeosPlus);
         }
 
         private void InitializeControls()
@@ -101,11 +103,8 @@ namespace NeosPlusLauncher.ViewModels
                         installButton.IsEnabled = true;
                         return;
                     }
-
-                    statusTextBlock.Text = "Starting Neos with NeosPlus...";
                 });
 
-                LaunchNeosPlus(neosPath, neosPlusDirectory);
 
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
@@ -161,6 +160,27 @@ namespace NeosPlusLauncher.ViewModels
             }
         }
 
+        private void LaunchNeosPlus()
+        {
+            string[] neosPaths = NeosPathHelper.GetNeosPaths();
+            string neosPath = null;
+
+            if (neosPaths.Length > 0)
+            {
+                neosPath = neosPaths[0];
+            }
+            else
+            {
+                statusTextBlock.Text = "No Neos directory found.";
+                return;
+            }
+
+            string neosPlusDirectory = Path.Combine(neosPath, "Libraries", "NeosPlus");
+
+            LaunchNeosPlus(neosPath, neosPlusDirectory);
+
+            statusTextBlock.Text = "Done";
+        }
         private void LaunchNeosPlus(string neosPath, string neosPlusDirectory)
         {
             string neosExePath = Path.Combine(neosPath, "neos.exe");
@@ -191,7 +211,6 @@ namespace NeosPlusLauncher.ViewModels
                 Console.WriteLine($"Failed to launch NeosVR: {ex.Message}");
             }
         }
-
         private async void InstallButton_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             await ExecuteInstall();
