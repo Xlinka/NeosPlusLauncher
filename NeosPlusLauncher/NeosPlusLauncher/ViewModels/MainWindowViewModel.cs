@@ -54,8 +54,11 @@ namespace NeosPlusLauncher.ViewModels
         {
             try
             {
-                installButton.IsEnabled = false;
-                statusTextBlock.Text = "Checking for updates...";
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    installButton.IsEnabled = false;
+                    statusTextBlock.Text = "Checking for updates...";
+                });
 
                 string[] neosPaths = NeosPathHelper.GetNeosPaths();
                 string neosPath = null;
@@ -71,8 +74,11 @@ namespace NeosPlusLauncher.ViewModels
 
                     if (result == null)
                     {
-                        statusTextBlock.Text = "No Neos directory selected.";
-                        installButton.IsEnabled = true;
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            statusTextBlock.Text = "No Neos directory selected.";
+                            installButton.IsEnabled = true;
+                        });
                         return;
                     }
 
@@ -90,22 +96,39 @@ namespace NeosPlusLauncher.ViewModels
 
                 if (!downloadSuccess)
                 {
-                    installButton.IsEnabled = true;
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        installButton.IsEnabled = true;
+                    });
                     return;
                 }
 
-                statusTextBlock.Text = "Starting Neos with NeosPlus...";
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    statusTextBlock.Text = "Starting Neos with NeosPlus...";
+                });
 
                 LaunchNeosPlus(neosPath, neosPlusDirectory);
 
-                statusTextBlock.Text = "Done";
-                installButton.IsEnabled = true;
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    statusTextBlock.Text = "Done";
+                    installButton.IsEnabled = true;
+                });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to execute install: {ex.Message}");
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    statusTextBlock.Text = $"Failed to execute install: {ex.Message}";
+                });
+
+                // Dump the error to a log file
+                string logFilePath = "./log.txt";
+                File.WriteAllText(logFilePath, ex.ToString());
             }
         }
+
 
         private async Task<bool> DownloadNeosPlus(string neosPath, string neosPlusDirectory)
         {
@@ -134,7 +157,6 @@ namespace NeosPlusLauncher.ViewModels
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error during NeosPlus download: {ex}");
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     statusTextBlock.Text = $"Error during NeosPlus download: {ex.Message}";
@@ -142,7 +164,6 @@ namespace NeosPlusLauncher.ViewModels
                 return false;
             }
         }
-
 
         private void LaunchNeosPlus(string neosPath, string neosPlusDirectory)
         {
@@ -175,9 +196,10 @@ namespace NeosPlusLauncher.ViewModels
             }
         }
 
-        private void InstallButton_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void InstallButton_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            _ = ExecuteInstall();
+            await ExecuteInstall();
         }
+
     }
 }
