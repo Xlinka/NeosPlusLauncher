@@ -1,6 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="NeosPlusInstaller.MainWindow"
+        x:Class="NeosPlusLauncher.MainWindow"
         Title="NeosPlus Launcher"
         Width="400"
         Height="200"
@@ -8,47 +8,35 @@
         WindowState="Normal"
         Topmost="False"
         Background="#1C1C1C"
-	   	Icon="/Assets/Neos+.ico">
+        Icon="/Assets/Neos+.ico">
 
+    <Window.Styles>
+        <Style Selector="Window">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="BorderBrush" Value="#0078D7"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+    </Window.Styles>
 
-	<Window.Styles>
-		<Style Selector="Window">
-			<Setter Property="CornerRadius" Value="10"/>
-			<Setter Property="Padding" Value="20"/>
-			<Setter Property="BorderBrush" Value="#0078D7"/>
-			<Setter Property="BorderThickness" Value="2"/>
-		</Style>
-	</Window.Styles>
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-	<Grid Margin="20">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-		</Grid.RowDefinitions>
+        <TextBlock Text="NeosPlus Launcher" FontWeight="Bold" FontSize="24" Foreground="White" Grid.Row="0" HorizontalAlignment="Center"/>
 
-		<TextBlock Text="NeosPlus Launcher" FontWeight="Bold" FontSize="24" Foreground="White" Grid.Row="0" HorizontalAlignment="Center"/>
+        <Button x:Name="InstallButton" Content="Install/Update" Grid.Row="1" Margin="30,20,20,0" Padding="8,5" HorizontalAlignment="Center"
+                Command="{Binding InstallCommand}" />
 
-		<Button x:Name="InstallButton" Content="Install/Update" Grid.Row="1" Margin="30,20,20,0" Padding="8,5" HorizontalAlignment="Center">
-			<Button.Styles>
-				<Style Selector="Button">
-					<Setter Property="FontFamily" Value="Segoe UI"/>
-					<Setter Property="FontSize" Value="14"/>
-					<Setter Property="Foreground" Value="White"/>
-					<Setter Property="Background" Value="#0078D7"/>
-					<Setter Property="CornerRadius" Value="5"/>
-				</Style>
-			</Button.Styles>
-		</Button>
+        <TextBlock x:Name="StatusTextBlock" Text="{Binding StatusText}" Grid.Row="2" Margin="0,10,0,0" Foreground="White" HorizontalAlignment="Center"/>
 
+        <TextBlock x:Name="LauncherArgumentsLabel" Text="Launcher Arguments:" Grid.Row="4" Margin="0,10,0,0" Foreground="White" HorizontalAlignment="Left"/>
 
-
-		<TextBlock x:Name="StatusTextBlock" Text="{Binding StatusText}" Grid.Row="2" Margin="0,10,0,0" Foreground="White" HorizontalAlignment="Center"/>
-
-		<TextBlock x:Name="LauncherArgumentsLabel" Text=" Launcher Arguments:" Grid.Row="4" Margin="0,10,0,0" Foreground="White" HorizontalAlignment="Left"/>
-
-		<TextBox x:Name="LauncherArgumentsTextBox" Grid.Row="4" Margin="0,0,0,0" Padding="10" Background="#1C1C1C" Foreground="White" BorderThickness="2" BorderBrush="#0078D7" CornerRadius="10" />
-
-	</Grid>
+        <TextBox x:Name="LauncherArgumentsTextBox" Grid.Row="4" Margin="0,0,0,0" Padding="10" Background="#1C1C1C" Foreground="White" BorderThickness="2" BorderBrush="#0078D7" CornerRadius="10"
+                 Text="{Binding LauncherArguments}" />
+    </Grid>
 </Window>
