@@ -1,4 +1,6 @@
 ﻿using Avalonia;
+using Avalonia.ReactiveUI;
+using ReactiveUI;
 using System;
 
 namespace NeosPlusLauncher
@@ -14,8 +16,13 @@ namespace NeosPlusLauncher
 
         // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()
-            => AppBuilder.Configure<App>()
+        {
+            RxApp.MainThreadScheduler = AvaloniaScheduler.Instance;
+
+            return AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+                .UseReactiveUI()
                 .LogToTrace();
+        }
     }
 }

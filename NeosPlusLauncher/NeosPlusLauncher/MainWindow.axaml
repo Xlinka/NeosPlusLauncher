@@ -1,54 +1,87 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="NeosPlusInstaller.MainWindow"
+        x:Class="NeosPlusLauncher.MainWindow"
+        Icon="/Assets/Neos+.ico"
         Title="NeosPlus Launcher"
-        Width="400"
-        Height="200"
-        WindowStartupLocation="CenterScreen"
-        WindowState="Normal"
+        Width="600"
+        Height="300"
         Topmost="False"
-        Background="#1C1C1C"
-	   	Icon="/Assets/Neos+.ico">
-
-
+        WindowState="Normal"
+        WindowStartupLocation="CenterScreen">
+	<Window.Background>
+		<SolidColorBrush Color="#2B2B2B" />
+	</Window.Background>
 	<Window.Styles>
 		<Style Selector="Window">
-			<Setter Property="CornerRadius" Value="10"/>
-			<Setter Property="Padding" Value="20"/>
-			<Setter Property="BorderBrush" Value="#0078D7"/>
-			<Setter Property="BorderThickness" Value="2"/>
+			<Setter Property="CornerRadius" Value="10" />
+			<Setter Property="Padding" Value="20" />
+			<Setter Property="BorderBrush" Value="#1F000000" />
+			<Setter Property="BorderThickness" Value="2" />
 		</Style>
 	</Window.Styles>
+	<DockPanel>
+		
+		<!-- Main Content -->
+		<Grid Margin="20">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<!-- Additional Row for Credit and Version -->
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+			<TextBlock Grid.Row="1" Margin="0,20,0,0" Text="NeosPlus Launcher" FontSize="24" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" FontFamily="Segoe UI" />
+			<StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Horizontal">
+				<Button x:Name="InstallButton" Margin="10,20,10,0" Padding="8,5"
+                        Content="Install/Update"
+                        Command="{Binding InstallCommand}"
+                        Background="#333333"
+                        BorderThickness="1"
+                        BorderBrush="#333333"
+                        CornerRadius="20"
+                        Foreground="#FFFFFF"
+                        FontFamily="Segoe UI" />
+				<Button x:Name="LaunchButton" Margin="10,20,10,0" Padding="8,5"
+                        Content="Launch"
+                        Command="{Binding LaunchCommand}"
+                        Background="#333333"
+                        BorderThickness="1"
+                        BorderBrush="#333333"
+                        CornerRadius="20"
+                        Foreground="#FFFFFF"
+                        FontFamily="Segoe UI" />
+			</StackPanel>
+			<TextBlock x:Name="StatusTextBlock" Grid.Row="3" Margin="0,10,0,0" Text="{Binding StatusText}" Foreground="#FFFFFF" HorizontalAlignment="Center" FontFamily="Segoe UI" />
+			<StackPanel Grid.Row="4" Margin="0,10,0,0" Orientation="Vertical">
+				<TextBlock x:Name="LauncherArgumentsLabel" Text="Launcher Arguments:" Foreground="#FFFFFF" HorizontalAlignment="Left" FontFamily="Segoe UI" />
+				<TextBox x:Name="LauncherArgumentsTextBox"
+                         Margin="0,5,0,0"
+                         Text="{Binding LauncherArguments}"
+                         Background="#333333"
+                         BorderThickness="1"
+                         BorderBrush="#333333"
+                         Foreground="#FFFFFF"
+                         FontFamily="Segoe UI" />
+			</StackPanel>
+			
 
-	<Grid Margin="20">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-		</Grid.RowDefinitions>
-
-		<TextBlock Text="NeosPlus Launcher" FontWeight="Bold" FontSize="24" Foreground="White" Grid.Row="0" HorizontalAlignment="Center"/>
-
-		<Button x:Name="InstallButton" Content="Install/Update" Grid.Row="1" Margin="30,20,20,0" Padding="8,5" HorizontalAlignment="Center">
-			<Button.Styles>
-				<Style Selector="Button">
-					<Setter Property="FontFamily" Value="Segoe UI"/>
-					<Setter Property="FontSize" Value="14"/>
-					<Setter Property="Foreground" Value="White"/>
-					<Setter Property="Background" Value="#0078D7"/>
-					<Setter Property="CornerRadius" Value="5"/>
-				</Style>
-			</Button.Styles>
-		</Button>
-
-
-
-		<TextBlock x:Name="StatusTextBlock" Text="{Binding StatusText}" Grid.Row="2" Margin="0,10,0,0" Foreground="White" HorizontalAlignment="Center"/>
-
-		<TextBlock x:Name="LauncherArgumentsLabel" Text=" Launcher Arguments:" Grid.Row="4" Margin="0,10,0,0" Foreground="White" HorizontalAlignment="Left"/>
-
-		<TextBox x:Name="LauncherArgumentsTextBox" Grid.Row="4" Margin="0,0,0,0" Padding="10" Background="#1C1C1C" Foreground="White" BorderThickness="2" BorderBrush="#0078D7" CornerRadius="10" />
-
-	</Grid>
+			
+			<!-- Credit and Version -->
+			<StackPanel Grid.Row="7" Margin="0,20,0,0" Orientation="Vertical">
+				<TextBlock x:Name="Credits"
+                           Text="© 2023 NeosPlus"
+                           Foreground="#FFFFFF"
+                           HorizontalAlignment="Center"
+                           FontFamily="Segoe UI" />
+				<TextBlock x:Name="Version"
+                           Text="{Binding VersionNumber}"
+                           Foreground="#FFFFFF"
+                           HorizontalAlignment="Center"
+                           FontFamily="Segoe UI" />
+			</StackPanel>
+		</Grid>
+	</DockPanel>
 </Window>
