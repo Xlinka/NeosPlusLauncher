@@ -12,6 +12,7 @@ namespace NeosPlusLauncher.ViewModels
     public class MainWindowViewModel : ReactiveObject
     {
         private string _statusText;
+
         public string StatusText
         {
             get => _statusText;
