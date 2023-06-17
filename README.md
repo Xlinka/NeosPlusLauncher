@@ -1,7 +1,8 @@
 ## NeosPlus Launcher
 
 NeosPlus Launcher is a program that automates the process of installing Neos+ on your NeosVR installation.
-![image](https://user-images.githubusercontent.com/22996716/231584769-3ab3f22b-9727-43c1-80ce-c0ce03faa53e.png)
+![image](https://github.com/Xlinka/NeosPlusLauncher/assets/22996716/6eaa4d7e-0fcd-419d-9f97-4aa9c894c6a2)
+
 
 ## Installation
 
