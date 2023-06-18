@@ -57,7 +57,7 @@ namespace NeosPlusLauncher.ViewModels
                     neosPath = neosPaths[0];
                 }
                 else
-                {
+                {   //openfolderdialog is obsolete replace it soon.
                     var dialog = new OpenFolderDialog { Title = "Select Directory", Directory = "." };
                     var result = await dialog.ShowAsync(mainWindow);
 
@@ -92,10 +92,6 @@ namespace NeosPlusLauncher.ViewModels
             catch (Exception ex)
             {
                 StatusText = $"Failed to execute install: {ex.Message}";
-
-                // Dump the error to a log file
-                string logFilePath = "./log.txt";
-                File.WriteAllText(logFilePath, ex.ToString());
             }
         }
 
