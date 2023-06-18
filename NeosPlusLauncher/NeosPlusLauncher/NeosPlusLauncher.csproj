@@ -23,6 +23,7 @@
 		<PackageReference Include="Avalonia.ReactiveUI" Version="11.0.0-rc1.1" />
 		<PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.0-rc1.1" />
 		<PackageReference Include="Octokit" Version="6.0.0" />
+		<PackageReference Include="ReactiveUI.Fody" Version="19.2.1" />
 	</ItemGroup>
 
 	<ItemGroup>

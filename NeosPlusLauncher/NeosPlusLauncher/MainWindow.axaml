@@ -38,6 +38,7 @@
 				<Button x:Name="InstallButton" Margin="10,20,10,0" Padding="8,5"
                         Content="Install/Update"
                         Command="{Binding InstallCommand}"
+						IsEnabled="{Binding InstallEnabled}"
                         Background="#333333"
                         BorderThickness="1"
                         BorderBrush="#333333"

@@ -8,12 +8,22 @@ using Octokit;
 
 namespace NeosPlusLauncher.ViewModels
 {
+    public struct DownloadResult
+    {
+        public readonly bool Succes = false;
+        public string Message = string.Empty;
+        public DownloadResult(bool success, string message)
+        {
+            Succes = success;
+            Message = message;
+        }
+    }
     public static class Download
     {
         private const string RepositoryOwner = "Xlinka";
         private const string RepositoryName = "NeosPlus";
 
-        public static async Task<bool> DownloadAndInstallNeosPlus(string neosPath, string neosPlusDirectory, TextBlock statusTextBlock, Button installButton)
+        public static async Task<DownloadResult> DownloadAndInstallNeosPlus(string neosPath, string neosPlusDirectory)
         {
             string neosPlusDir = Path.Combine(neosPath, "Libraries", "NeosPlus");
             Directory.CreateDirectory(neosPlusDir);
@@ -30,11 +40,6 @@ namespace NeosPlusLauncher.ViewModels
                 string latestReleaseUrl = latestRelease.Assets[0].BrowserDownloadUrl;
                 string localZipFilePath = Path.Combine(neosPlusDir, $"NeosPlus_{latestRelease.TagName}.zip");
 
-                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
-                {
-                    statusTextBlock.Text = "Downloading NeosPlus...";
-                });
-
                 try
                 {
                     using (HttpClient httpClient = new HttpClient())
@@ -43,12 +48,7 @@ namespace NeosPlusLauncher.ViewModels
 
                         if (!response.IsSuccessStatusCode)
                         {
-                            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-                            {
-                                statusTextBlock.Text = "Failed to download NeosPlus.";
-                                installButton.IsEnabled = true;
-                            });
-                            return false;
+                            return new DownloadResult(false, "Failed to download NeosPlus.");
                         }
 
                         using (Stream contentStream = await response.Content.ReadAsStreamAsync(),
@@ -67,31 +67,16 @@ namespace NeosPlusLauncher.ViewModels
                     // Update the version information in the version.txt file
                     await File.WriteAllTextAsync(versionFilePath, latestRelease.TagName);
 
-                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        statusTextBlock.Text = "NeosPlus downloaded and installed successfully.";
-                    });
-
-                    return true;
+                    return new DownloadResult(true, "NeosPlus downloaded and installed successfully.");
                 }
                 catch (Exception ex)
                 {
-                    await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        statusTextBlock.Text = $"Failed to download or install NeosPlus: {ex.Message}";
-                        installButton.IsEnabled = true;
-                    });
-                    return false;
+                    return new DownloadResult(false, $"Failed to download or install NeosPlus: {ex.Message}");
                 }
             }
             else
             {
-                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    statusTextBlock.Text = "NeosPlus is up-to-date.";
-                });
-
-                return true;
+                return new DownloadResult(false, $"NeosPlus is up-to-date.");
             }
         }
     }
