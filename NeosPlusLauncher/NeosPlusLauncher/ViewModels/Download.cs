@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -37,7 +38,16 @@ namespace NeosPlusLauncher.ViewModels
 
             if (currentVersion != latestRelease.TagName)
             {
-                string latestReleaseUrl = latestRelease.Assets[0].BrowserDownloadUrl;
+                // Filter the assets to find the release zip file
+                ReleaseAsset latestReleaseZipAsset = latestRelease.Assets
+                    .FirstOrDefault(a => a.Name.EndsWith(".zip") && a.Name.StartsWith($"{latestRelease.TagName}"));
+
+                if (latestReleaseZipAsset == null)
+                {
+                    return new DownloadResult(false, "No suitable NeosPlus release found.");
+                }
+
+                string latestReleaseUrl = latestReleaseZipAsset.BrowserDownloadUrl;
                 string localZipFilePath = Path.Combine(neosPlusDir, $"NeosPlus_{latestRelease.TagName}.zip");
 
                 try
@@ -61,9 +71,6 @@ namespace NeosPlusLauncher.ViewModels
                     // Extract the zip file to the NeosPlus directory
                     ZipFile.ExtractToDirectory(localZipFilePath, neosPlusDir, true);
 
-                    // Delete the zip file after extraction
-                    File.Delete(localZipFilePath);
-
                     // Update the version information in the version.txt file
                     await File.WriteAllTextAsync(versionFilePath, latestRelease.TagName);
 
@@ -72,6 +79,14 @@ namespace NeosPlusLauncher.ViewModels
                 catch (Exception ex)
                 {
                     return new DownloadResult(false, $"Failed to download or install NeosPlus: {ex.Message}");
+                }
+                finally
+                {
+                    // Ensure the zip file is deleted regardless of whether the extraction was successful or not
+                    if (File.Exists(localZipFilePath))
+                    {
+                        File.Delete(localZipFilePath);
+                    }
                 }
             }
             else
