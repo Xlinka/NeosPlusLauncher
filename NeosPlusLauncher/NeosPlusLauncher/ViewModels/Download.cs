@@ -23,7 +23,7 @@ namespace NeosPlusLauncher.ViewModels
         private const string RepositoryOwner = "Xlinka";
         private const string RepositoryName = "NeosPlus";
 
-        public static async Task<DownloadResult> DownloadAndInstallNeosPlus(string neosPath, string neosPlusDirector)
+        public static async Task<DownloadResult> DownloadAndInstallNeosPlus(string neosPath, string neosPlusDirectory)
         {
             string neosPlusDir = Path.Combine(neosPath, "Libraries", "NeosPlus");
             Directory.CreateDirectory(neosPlusDir);
