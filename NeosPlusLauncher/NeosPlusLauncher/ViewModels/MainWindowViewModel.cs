@@ -143,11 +143,12 @@ namespace NeosPlusLauncher.ViewModels
             string arguments;
             if (SteamRunEnabled)
             {
-                // Should technically work even with flatpak steam
+                // Without that, xdg-open will interprete slashes incorrectly
                 neosExePath = "sh";
-                // Absolute path with replaced forward slashes doesn't work
+                // Absolute path replaced with relative, absolute doesn't work with steam run
                 neosPlusDllPath = neosPlusDllPath.Replace(neosPath + "/", "");
-                // Only double forward slashes worked with steam run, not backslashes
+                // Only double backslashes worked with steam run, not forward slashes
+                // And for it to work inside sh, it needs another double backslash
                 neosPlusDllPath = neosPlusDllPath.Replace("/", "\\\\");
                 // Single quote is essential for steam run as well
                 arguments = $"-c \"xdg-open steam://run/740250//'-LoadAssembly {neosPlusDllPath}";
@@ -170,7 +171,7 @@ namespace NeosPlusLauncher.ViewModels
             }
             if (SteamRunEnabled)
             {
-                // Here we close entire argument for steam run
+                // Here we close entire argument for steam run, as well as for sh
                 arguments += "'\"";
             }
 
