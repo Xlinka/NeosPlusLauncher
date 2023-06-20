@@ -21,10 +21,11 @@ namespace NeosPlusLauncher.ViewModels
 
         [Reactive]
         public bool InstallEnabled { get; set; } = true;
+        [Reactive]
+        public bool SteamRunEnabled { get; set; } = false;
 
         public ReactiveCommand<Unit, Unit> InstallCommand { get; }
         public ReactiveCommand<Unit, Unit> LaunchCommand { get; }
-
         private MainWindow mainWindow;
 
         public MainWindowViewModel(MainWindow mainWindow)
@@ -101,7 +102,7 @@ namespace NeosPlusLauncher.ViewModels
             {
                 StatusText = "Downloading NeosPlus...";
                 InstallEnabled = false;
-                
+
                 DownloadResult res = await Download.DownloadAndInstallNeosPlus(neosPath, neosPlusDirectory);
                 StatusText = res.Message;
 
@@ -136,15 +137,41 @@ namespace NeosPlusLauncher.ViewModels
         }
         private void LaunchNeosPlus(string neosPath, string neosPlusDirectory)
         {
-            string neosExePath = Path.Combine(neosPath, "neos.exe");
+
+            string neosExePath;
             string neosPlusDllPath = Path.Combine(neosPlusDirectory, "NeosPlus.dll");
-            string arguments = $"-LoadAssembly \"{neosPlusDllPath}\"";
+            string arguments;
+            if (SteamRunEnabled)
+            {
+                // Should technically work even with flatpak steam
+                neosExePath = "sh";
+                // Absolute path with replaced forward slashes doesn't work
+                neosPlusDllPath = neosPlusDllPath.Replace(neosPath + "/", "");
+                // Only double forward slashes worked with steam run, not backslashes
+                neosPlusDllPath = neosPlusDllPath.Replace("/", "\\\\");
+                // Single quote is essential for steam run as well
+                arguments = $"-c \"xdg-open steam://run/740250//'-LoadAssembly {neosPlusDllPath}";
+            }
+            else
+            {
+                neosExePath = Path.Combine(neosPath, "Neos.exe");
+                arguments = $"-LoadAssembly \"{neosPlusDllPath}\"";
+            }
 
             // Get the value of the LauncherArgumentsTextBox and add it as an argument
             string launcherArguments = LauncherArguments.Trim();
             if (!string.IsNullOrEmpty(launcherArguments))
             {
+                if (SteamRunEnabled)
+                {
+                    launcherArguments = launcherArguments.Replace("/", "\\\\");
+                }
                 arguments += $" {launcherArguments}";
+            }
+            if (SteamRunEnabled)
+            {
+                // Here we close entire argument for steam run
+                arguments += "'\"";
             }
 
             ProcessStartInfo startInfo = new ProcessStartInfo(neosExePath, arguments);
