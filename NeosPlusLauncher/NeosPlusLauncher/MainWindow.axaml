@@ -36,7 +36,7 @@
 			<TextBlock Grid.Row="1" Margin="0,20,0,0" Text="NeosPlus Launcher" FontSize="24" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" FontFamily="Segoe UI" />
 
 			<StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Vertical">
-				<CheckBox IsThreeState="False"
+				<CheckBox 	IsThreeState="False" Margin="10,20,10,0" Padding="8,5"
 							IsChecked="{Binding SteamRunEnabled}"
 							Content="Use Steam (Linux only)"
 							Background="#333333"
