@@ -155,7 +155,7 @@ namespace NeosPlusLauncher.ViewModels
             }
             else
             {
-                neosExePath = Path.Combine(neosPath, "Neos.exe");
+                neosExePath = Path.Combine(neosPath, "neos.exe");
                 arguments = $"-LoadAssembly \"{neosPlusDllPath}\"";
             }
 
