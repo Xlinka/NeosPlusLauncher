@@ -34,26 +34,38 @@
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 			<TextBlock Grid.Row="1" Margin="0,20,0,0" Text="NeosPlus Launcher" FontSize="24" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" FontFamily="Segoe UI" />
-			<StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Horizontal">
-				<Button x:Name="InstallButton" Margin="10,20,10,0" Padding="8,5"
-                        Content="Install/Update"
-                        Command="{Binding InstallCommand}"
-						IsEnabled="{Binding InstallEnabled}"
-                        Background="#333333"
-                        BorderThickness="1"
-                        BorderBrush="#333333"
-                        CornerRadius="20"
-                        Foreground="#FFFFFF"
-                        FontFamily="Segoe UI" />
-				<Button x:Name="LaunchButton" Margin="10,20,10,0" Padding="8,5"
-                        Content="Launch"
-                        Command="{Binding LaunchCommand}"
-                        Background="#333333"
-                        BorderThickness="1"
-                        BorderBrush="#333333"
-                        CornerRadius="20"
-                        Foreground="#FFFFFF"
-                        FontFamily="Segoe UI" />
+
+			<StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Vertical">
+				<CheckBox 	IsThreeState="False" Margin="10,20,10,0" Padding="8,5"
+							IsChecked="{Binding SteamRunEnabled}"
+							Content="Use Steam (Linux only)"
+							Background="#333333"
+							BorderThickness="1"
+							BorderBrush="#333333"
+							CornerRadius="20"
+							Foreground="#FFFFFF"
+							FontFamily="Segoe UI" />
+				<StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Horizontal">
+					<Button x:Name="InstallButton" Margin="10,20,10,0" Padding="8,5"
+							Content="Install/Update"
+							Command="{Binding InstallCommand}"
+							IsEnabled="{Binding InstallEnabled}"
+							Background="#333333"
+							BorderThickness="1"
+							BorderBrush="#333333"
+							CornerRadius="20"
+							Foreground="#FFFFFF"
+							FontFamily="Segoe UI" />
+					<Button x:Name="LaunchButton" Margin="10,20,10,0" Padding="8,5"
+							Content="Launch"
+							Command="{Binding LaunchCommand}"
+							Background="#333333"
+							BorderThickness="1"
+							BorderBrush="#333333"
+							CornerRadius="20"
+							Foreground="#FFFFFF"
+							FontFamily="Segoe UI" />
+				</StackPanel>
 			</StackPanel>
 			<TextBlock x:Name="StatusTextBlock" Grid.Row="3" Margin="0,10,0,0" Text="{Binding StatusText}" Foreground="#FFFFFF" HorizontalAlignment="Center" FontFamily="Segoe UI" />
 			<StackPanel Grid.Row="4" Margin="0,10,0,0" Orientation="Vertical">
