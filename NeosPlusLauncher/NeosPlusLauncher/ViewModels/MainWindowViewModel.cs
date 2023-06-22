@@ -31,6 +31,11 @@ namespace NeosPlusLauncher.ViewModels
         {
             this.mainWindow = mainWindow;
 
+            // Load the configuration
+            Config config = Config.LoadConfig();
+            // Set the LauncherArguments from the configuration
+            LauncherArguments = config.LauncherArguments;
+
             InitializeControls();
 
             InstallCommand = ReactiveCommand.CreateFromTask(ExecuteInstall);
