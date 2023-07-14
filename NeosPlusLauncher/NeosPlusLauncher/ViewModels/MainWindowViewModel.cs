@@ -63,7 +63,7 @@ namespace NeosPlusLauncher.ViewModels
                 }
                 else
                 {   //openfolderdialog is obsolete replace it soon.
-                    var dialog = new OpenFolderDialog { Title = "Select Directory", Directory = "." };
+                    var dialog = new OpenFolderDialog { Title = "Select Neos Directory", Directory = "." };
                     var result = await dialog.ShowAsync(mainWindow);
 
                     if (result == null)
